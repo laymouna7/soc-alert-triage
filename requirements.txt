@@ -1,0 +1,6 @@
+"# Requirements pour le projet" 
+"pandas>=1.5.0" 
+"scikit-learn>=1.2.0" 
+"shap>=0.41.0" 
+"numpy>=1.23.0" 
+"python-dateutil>=2.8.0" 

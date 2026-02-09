@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.env
+.venv
+
+# Données
+data/*.csv
+!data/examples/
+data/processed/
+data/raw/
+
+# Modèles
+models/*.pkl
+models/*.joblib
+models/*.h5
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Virtual environment
+venv*/
+env*/
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
