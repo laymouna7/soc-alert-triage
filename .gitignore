@@ -43,4 +43,7 @@ env*/
 .idea/
 
 # VS Code
-.vscode/
+.vscode/data/
+venv/
+data/
+venv/
