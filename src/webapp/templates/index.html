@@ -45,7 +45,6 @@
       padding: 40px;
     }
 
-    /* Upload zone */
     .upload-zone {
       border: 1px dashed #30363d;
       border-radius: 6px;
@@ -90,7 +89,13 @@
     .btn:hover { background: #238636; }
     .btn:disabled { background: #21262d; color: #484f58; cursor: not-allowed; }
 
-    /* Summary cards */
+    .btn-export {
+      background: #0d419d;
+      margin-top: 0;
+    }
+
+    .btn-export:hover { background: #0969da; }
+
     .summary {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -119,18 +124,23 @@
       color: #e6edf3;
     }
 
-    .card.high { border-top: 2px solid #da3633; }
+    .card.high   { border-top: 2px solid #da3633; }
     .card.medium { border-top: 2px solid #d29922; }
-    .card.low { border-top: 2px solid #1a7f37; }
-    .card.total { border-top: 2px solid #58a6ff; }
+    .card.low    { border-top: 2px solid #1a7f37; }
+    .card.total  { border-top: 2px solid #58a6ff; }
 
-    /* Alerts table */
+    .table-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
     .section-title {
       font-size: 12px;
       letter-spacing: 2px;
       text-transform: uppercase;
       color: #8b949e;
-      margin-bottom: 16px;
     }
 
     .alert-table {
@@ -167,9 +177,9 @@
       letter-spacing: 1px;
     }
 
-    .badge.HIGH { background: #3d1b1b; color: #f85149; border: 1px solid #da3633; }
+    .badge.HIGH   { background: #3d1b1b; color: #f85149; border: 1px solid #da3633; }
     .badge.MEDIUM { background: #2d2008; color: #e3b341; border: 1px solid #d29922; }
-    .badge.LOW { background: #0d2117; color: #3fb950; border: 1px solid #1a7f37; }
+    .badge.LOW    { background: #0d2117; color: #3fb950; border: 1px solid #1a7f37; }
 
     .confidence-bar {
       display: flex;
@@ -182,7 +192,6 @@
       border-radius: 2px;
     }
 
-    /* SHAP reasons expandable */
     .reasons { display: none; }
     .reasons.open { display: block; }
 
@@ -199,13 +208,12 @@
     .reason-row .dir.pos { color: #3fb950; }
     .reason-row .dir.neg { color: #f85149; }
     .reason-row .feat { width: 240px; color: #c9d1d9; }
-    .reason-row .val { width: 100px; }
+    .reason-row .val  { width: 100px; }
     .shap-bar-wrap { flex: 1; background: #21262d; height: 4px; border-radius: 2px; }
     .shap-bar { height: 4px; border-radius: 2px; }
     .shap-bar.pos { background: #1a7f37; }
     .shap-bar.neg { background: #da3633; }
 
-    /* Status */
     #status {
       font-size: 13px;
       color: #8b949e;
@@ -270,7 +278,12 @@
       </div>
     </div>
 
-    <div class="section-title">Alert Details &mdash; click any row to expand SHAP explanation</div>
+    <div class="table-header-row">
+      <div class="section-title">Alert Details &mdash; click any row to expand SHAP explanation</div>
+      <button class="btn btn-export" id="exportBtn" onclick="exportPDF()">
+        EXPORT PDF REPORT
+      </button>
+    </div>
 
     <table class="alert-table">
       <thead>
@@ -290,10 +303,10 @@
 </div>
 
 <script>
-  const fileInput = document.getElementById('fileInput');
+  const fileInput  = document.getElementById('fileInput');
   const uploadZone = document.getElementById('uploadZone');
-  const status = document.getElementById('status');
-  const results = document.getElementById('results');
+  const status     = document.getElementById('status');
+  const results    = document.getElementById('results');
 
   // Drag and drop
   uploadZone.addEventListener('dragover', e => {
@@ -336,10 +349,10 @@
   function renderResults(data) {
     const { summary, alerts } = data;
 
-    document.getElementById('totalCount').textContent = summary.total;
-    document.getElementById('highCount').textContent = summary.high;
+    document.getElementById('totalCount').textContent  = summary.total;
+    document.getElementById('highCount').textContent   = summary.high;
     document.getElementById('mediumCount').textContent = summary.medium;
-    document.getElementById('lowCount').textContent = summary.low;
+    document.getElementById('lowCount').textContent    = summary.low;
 
     status.textContent = `Triage complete. ${summary.high} HIGH  ${summary.medium} MEDIUM  ${summary.low} LOW`;
 
@@ -347,7 +360,6 @@
     tbody.innerHTML = '';
 
     alerts.forEach((alert, i) => {
-      // Main row
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td style="color:#484f58">${alert.index}</td>
@@ -367,11 +379,10 @@
         </td>
       `;
 
-      // SHAP expansion row
-      const trExpand = document.createElement('tr');
-      const tdExpand = document.createElement('td');
+      const trExpand  = document.createElement('tr');
+      const tdExpand  = document.createElement('td');
       tdExpand.colSpan = 6;
-      tdExpand.style.padding = '0 16px';
+      tdExpand.style.padding    = '0 16px';
       tdExpand.style.background = '#0d1f33';
 
       const reasonsDiv = document.createElement('div');
@@ -381,17 +392,19 @@
 
       alert.reasons.forEach(r => {
         const barWidth = maxShap > 0 ? (Math.abs(r.shap) / maxShap * 100) : 0;
-        const isPos = r.direction === '+';
-        const row = document.createElement('div');
-        row.className = 'reason-row';
-        row.innerHTML = `
+        const isPos    = r.direction === '+';
+        const row      = document.createElement('div');
+        row.className  = 'reason-row';
+        row.innerHTML  = `
           <span class="dir ${isPos ? 'pos' : 'neg'}">${r.direction}</span>
           <span class="feat">${r.feature}</span>
           <span class="val">${r.value.toLocaleString()}</span>
           <div class="shap-bar-wrap">
             <div class="shap-bar ${isPos ? 'pos' : 'neg'}" style="width:${barWidth}%"></div>
           </div>
-          <span style="font-size:11px;color:#484f58;width:60px;text-align:right">${r.shap > 0 ? '+' : ''}${r.shap}</span>
+          <span style="font-size:11px;color:#484f58;width:60px;text-align:right">
+            ${r.shap > 0 ? '+' : ''}${r.shap}
+          </span>
         `;
         reasonsDiv.appendChild(row);
       });
@@ -399,15 +412,42 @@
       tdExpand.appendChild(reasonsDiv);
       trExpand.appendChild(tdExpand);
 
-      tr.addEventListener('click', () => {
-        reasonsDiv.classList.toggle('open');
-      });
+      tr.addEventListener('click', () => reasonsDiv.classList.toggle('open'));
 
       tbody.appendChild(tr);
       tbody.appendChild(trExpand);
     });
 
     results.classList.remove('hidden');
+  }
+
+  function exportPDF() {
+    const btn = document.getElementById('exportBtn');
+    btn.textContent = 'GENERATING...';
+    btn.disabled    = true;
+
+    fetch('/export/pdf')
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(d => { throw new Error(d.error); });
+        }
+        return response.blob();
+      })
+      .then(blob => {
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement('a');
+        a.href     = url;
+        a.download = `soc_triage_report_${Date.now()}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+        btn.textContent = 'EXPORT PDF REPORT';
+        btn.disabled    = false;
+      })
+      .catch(err => {
+        alert('Export failed: ' + err.message);
+        btn.textContent = 'EXPORT PDF REPORT';
+        btn.disabled    = false;
+      });
   }
 </script>
 
